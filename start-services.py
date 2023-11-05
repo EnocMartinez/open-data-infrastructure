@@ -45,6 +45,6 @@ if __name__ == "__main__":
         if host == hostname:
             rich.print(f"Starting service {service}...")
         else:
-            rich.print(f"Skipping service {service}, ({host} != {hostname})...")
+            rich.print(f"skipping service {service}, ({host} != {hostname})...")
 
 
