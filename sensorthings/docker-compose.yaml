@@ -1,0 +1,86 @@
+version: '3.9'
+
+services:
+  sta:
+    image: fraunhoferiosb/frost-server:latest
+    container_name: sensorthings
+    depends_on:
+      - sta_db
+    env_file:
+      - ../../secrets/sensorthings.env
+    environment:
+      - maxTop=100000
+      - http_cors_enable=true
+      - http_cors_allowed.origins=*
+      - persistence_db_driver=org.postgresql.Driver
+      - persistence_autoUpdateDatabase=true
+      - maxDataSize=50000000 # default is 25 MB, upgraded to 50
+      - enableMultiDatastream=false
+      - enableActuation=false
+      - bus_workerPoolSize=50  ## max 50 threads
+      - bus_queueSize=10000000  # 10 MB (default is unknown)
+      - mqtt_Enabled=false
+    ports:
+      - 8080:8080
+
+#------------------------------------------------#
+# SensorThings Database from TimscaleDB HA image
+#------------------------------------------------#
+  sta_db:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    image: postgres_postgis_timescaledb:local
+    # Run postgres and then create postgis extension
+    # command: ["postgres", "&&", "psql", "-U", "sensorthings", "-c", "CREATE EXTENSION postgis;", "sensorthings", "&&", "echo", "======> done!"]
+    # Run postgres and add POSTGIS extension
+    container_name: sta_db
+    env_file:
+      - ../../secrets/sensorthings.env
+    ports:
+      - 5432:5432
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "sensorthings" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
+
+  #  sta_db:
+#      image: postgis/postgis:14-3.2-alpine
+#      environment:
+#        - POSTGRES_DB=sensorthings
+#        - POSTGRES_USER=sensorthings
+#        - POSTGRES_PASSWORD=ChangeMe
+
+#------------------------------------------------#
+# PgAdmin
+#------------------------------------------------#
+  pgadmin:
+    image: dpage/pgadmin4:7.8
+    container_name: pgadmin
+    depends_on:
+      - sta_db
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_DISABLE_POSTFIX=true
+    ports:
+      - 80:80
+
+
+#-----------------------------------------------#
+#  Master Metadata database
+#-----------------------------------------------#
+  mongodb:
+    # https://hub.docker.com/r/mongodb/mongodb-community-server/tags
+    image: mongodb/mongodb-community-server:7.0.1-ubuntu2204
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    env_file:
+      - ../../secrets/mongodb.env
+    volumes:
+      - ../../volumes/mongodb:/data/db
+
