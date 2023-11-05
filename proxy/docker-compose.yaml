@@ -12,6 +12,6 @@ services:
     env_file:
       - ../../secrets/network.env
     volumes:
-      - ../../volumes/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ../../volumes/nginx/ssl:/ssl_keys
+      - ../../volumes/proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ../../volumes/proxy/ssl:/ssl_keys
     network_mode: host
