@@ -1,6 +1,9 @@
 version: '3.9'
 
 services:
+#------------------------------------------------#
+# FROST-Server
+#------------------------------------------------#
   sta:
     image: fraunhoferiosb/frost-server:latest
     container_name: sensorthings
@@ -22,6 +25,25 @@ services:
       - mqtt_Enabled=false
     ports:
       - 8080:8080
+
+#------------------------------------------------#
+# SensorThings TimeSeries
+#------------------------------------------------#
+  sta-timeseries:
+    image: enocmartinez/sensorthings-timeseries:v0.2.1-alpine
+    container_name: sta-timeseries
+    depends_on:
+      - sta_db
+    env_file:
+      - ../../secrets/sensorthings.env
+    ports:
+      - 8081:3000
+    healthcheck:
+      test: curl --fail http://localhost:3000/Sensors || exit 1
+      interval: 60s
+      retries: 1
+      timeout: 2s
+    restart: unless-stopped
 
 #------------------------------------------------#
 # SensorThings Database from TimscaleDB HA image
