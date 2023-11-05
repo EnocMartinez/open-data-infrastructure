@@ -25,19 +25,19 @@ def start_service(service):
 
 if __name__ == "__main__":
     argparser = ArgumentParser()
-    argparser.add_argument("-i", "--infrastructure", help="Path no infrastructure.yaml", type=str, default="../secrets/infrastructure.yaml")
+    argparser.add_argument("-i", "--infrastructure", help="Path no infrastructure.yaml", type=str, default="../../secrets/infrastructure.yaml")
     args = argparser.parse_args()
 
     if not os.path.exists(args.infrastructure):
         rich.print(f"[red]ERROR: Infrastructure file does not exist (path {args.infrastructure})\n")
         exit(1)
 
-    with open(args.network) as f:
+    with open(args.infrastructure) as f:
         network = yaml.safe_load(f)
 
     rich.print(network)
     hostname = os.uname().nodename
-    services = {s.split(":")[0]: s.split(":")[1] for s in network["network"]["services"]}
+    services = {s.split(":")[0]: s.split(":")[1] for s in network["infrastructure"]["services"]}
 
     if hostname != services["proxy"]:
         rich.print(f"[red]ERROR! This machine is not the entry point, the configured entry point is '{services['proxy']}'")

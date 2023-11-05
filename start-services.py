@@ -32,7 +32,7 @@ if __name__ == "__main__":
         rich.print(f"[red]ERROR: Infrastructure file does not exist (path {args.infrastructure})\n")
         exit(1)
 
-    with open(args.network) as f:
+    with open(args.infrastructure) as f:
         network = yaml.safe_load(f)
 
     rich.print(network)
