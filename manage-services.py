@@ -26,7 +26,16 @@ def start_service(service):
 if __name__ == "__main__":
     argparser = ArgumentParser()
     argparser.add_argument("-i", "--infrastructure", help="Path no infrastructure.yaml", type=str, default="../secrets/infrastructure.yaml")
+    argparser.add_argument("action", help="Docker action (up / down / start /stop)", type=str)
+
+    __valid_actions = ["up", "down", "start", "stop"]
+
     args = argparser.parse_args()
+
+    if args.action.lower() not in __valid_actions:
+        rich.print(f"[red]ERROR: Actino not valid, expected one of {__valid_actions}")
+        exit(1)
+
 
     if not os.path.exists(args.infrastructure):
         rich.print(f"[red]ERROR: Infrastructure file does not exist (path {args.infrastructure})\n")

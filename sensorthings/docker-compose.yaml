@@ -34,15 +34,13 @@ services:
       context: ./database
       dockerfile: Dockerfile
     image: postgres_postgis_timescaledb:local
-    # Run postgres and then create postgis extension
-    # command: ["postgres", "&&", "psql", "-U", "sensorthings", "-c", "CREATE EXTENSION postgis;", "sensorthings", "&&", "echo", "======> done!"]
-    # Run postgres and add POSTGIS extension
     container_name: sta_db
     env_file:
       - ../../secrets/sensorthings.env
     ports:
       - 5432:5432
-
+    networks:
+      - sensorthings-net
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready", "-d", "sensorthings" ]
       interval: 30s
@@ -50,11 +48,6 @@ services:
       retries: 5
       start_period: 10s
 
-  #  sta_db:
-#      image: postgis/postgis:14-3.2-alpine
-#      environment:
-#        - POSTGRES_DB=sensorthings
-#        - POSTGRES_USER=sensorthings
-#        - POSTGRES_PASSWORD=ChangeMe
-
-
+networks:
+  sensorthings-net:
+    external: true

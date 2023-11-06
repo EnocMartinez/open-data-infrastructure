@@ -12,6 +12,7 @@ import yaml
 import rich
 import os
 from argparse import ArgumentParser
+import docker
 
 def start_service(service):
     if not os.path.isdir(service):
@@ -22,6 +23,21 @@ def start_service(service):
     rich.print(f"Starting service '{service}'...")
     rich.print("docker compose up -d")
     os.chdir("..")
+
+def create_network(name):
+    """
+    Checks if a network exists in docker and creates it
+    :param name: network name
+    :return:
+    """
+    client = docker.from_env()
+    nets = client.networks(filter={"name": name})
+    if len(nets) == 0:
+        rich.print(f"Creating network '{name}'")
+        client.networks.create(name=name)
+    else:
+        rich.print(f"Network '{name}' already exists")
+
 
 if __name__ == "__main__":
     argparser = ArgumentParser()
@@ -44,38 +60,11 @@ if __name__ == "__main__":
     hostname = os.uname().nodename
     services = {s.split(":")[0]: s.split(":")[1] for s in infrastructure["services"]}
 
+    networks = {s.split(":")[0]: s.split(":")[1] for s in infrastructure["docker-networks"]}
 
-    # rich.print("Registering servers in /etc/hosts")
-    # with open("/etc/hosts") as f:
-    #     hosts_contents = f.read().splitlines()
-    # rich.print(hosts_contents)
-    #
-    # for address in infrastructure["addresses"]:
-    #     rich.print(f"processing {address}")
-    #     new_name, new_ip = address.split("=")
-    #
-    #     # Check if they already exist in /etc/hosts
-    #     existing = False
-    #     for hosts in hosts_contents:
-    #         if not hosts or hosts.startswith("#"):
-    #             continue
-    #         hosts_ip = hosts.split()[0]
-    #         hosts_names = hosts.split()[1:]
-    #         if new_name in hosts_names:
-    #             existing = True
-    #             # Host already registered
-    #             if hosts_ip == new_ip:
-    #                 rich.print(f"Address {new_name} {new_ip} already registered")
-    #             else: # update the host
-    #                 rich.print(f"Updating {new_name} from {hosts_ip} to '{new_ip}'")
-    #                 cmd = f"sudo su -c \"sed -i 's|{hosts}|{new_name} {new_ip}|g' /etc/hosts\""
-    #                 print(cmd)
-    #                 os.system(cmd)
-    #     if not existing:
-    #         rich.print(f"Adding new address {new_ip} {new_name}")
-    #         cmd = f'sudo su -c \'echo "{new_ip} {new_name}"\' >> /etc/hosts'
-    #         print(cmd)
-    #         os.system(cmd)
+    for network_name, network_host in networks:
+        if hostname == network_host:
+            create_network(network_name)
 
     addresses = {a.split("=")[0]:a.split("=")[1] for a in infrastructure["addresses"]}
     rich.print(addresses)
@@ -95,3 +84,5 @@ if __name__ == "__main__":
             cmd = f"sudo {args.script} {src} '{ip_address}' {dest} {protocol}"
             rich.print(f"Running command => {cmd}")
             os.system(cmd)
+
+    
