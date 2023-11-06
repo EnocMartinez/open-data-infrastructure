@@ -62,7 +62,7 @@ if __name__ == "__main__":
                 os.chdir(service)
             except FileNotFoundError:
                 rich.print(f"[red]ERROR! folder {service} does not exist! skipping action")
-            cmd = f"docker compose {args.action}"
+            cmd = f"docker compose {action}"
             rich.print(f"\n==> Service '{service}' running '{cmd}'...")
             ret = os.system(cmd)
             if ret == 0:
