@@ -5,14 +5,16 @@ services:
     image: grafana/grafana:8.4.4
     container_name: grafana
     user: 1001:1001  # force user with UID=1001 (enoc)
+    env_file:
+      - ../../secrets/grafana.env
     environment:
       - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app,grafana-worldmap-panel,fatcloud-windrose-panel,snuids-trafficlights-panel,innius-video-panel,agenty-flowcharting-panel
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_SMTP_SKIP_VERIFY=false
       - GF_SMTP_FROM_NAME=Grafana
       - GF_DATE_FORMATS_DEFAULT_TIMEZONE=utc
+      - GF_SECURITY_ALLOW_EMBEDDING=true
     ports:
       - 8084:3000
     volumes:
       - ../../volumes/grafana/grafana_data:/var/lib/grafana
-      #- ../../volumes/defaults.ini:/usr/share/grafana/conf/defaults.ini
