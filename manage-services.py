@@ -37,23 +37,40 @@ if __name__ == "__main__":
         exit(1)
 
 
+    action = args.action.lower()
+    if action == "up":
+        action += " --detach"  # add detach to up
+    elif action == "down":
+        action += " --remove-orphans"  # add remove orphans
+
     if not os.path.exists(args.infrastructure):
         rich.print(f"[red]ERROR: Infrastructure file does not exist (path {args.infrastructure})\n")
         exit(1)
 
     with open(args.infrastructure) as f:
-        network = yaml.safe_load(f)
+        infrastructure = yaml.safe_load(f)["infrastructure"]
 
-    rich.print(network)
     hostname = os.uname().nodename
 
-    services = [s.split(":") for s in network["infrastructure"]["services"]]
+    services = [s.split(":") for s in infrastructure["services"]]
     # Check that all
 
+    wdir = os.getcwd()
     for service, host in services:
         if host == hostname:
-            rich.print(f"Starting service {service}...")
+            try:
+                os.chdir(service)
+            except FileNotFoundError:
+                rich.print(f"[red]ERROR! folder {service} does not exist! skipping action")
+            cmd = f"docker compose {args.action}"
+            rich.print(f"\n==> Service '{service}' running '{cmd}'...")
+            ret = os.system(cmd)
+            if ret == 0:
+                rich.print(f"{service}...[green]ok!")
+            else:
+                rich.print(f"{service}...[red]failed")
+            os.chdir(wdir)
         else:
-            rich.print(f"skipping service {service}, ({host} != {hostname})...")
+            rich.print(f"[blue]skipping service {service}...")
 
 

@@ -13,4 +13,8 @@ services:
       - ../../secrets/pgadmin.env
     ports:
       - 8085:80
+    networks:
+      - sensorthings-net
+
+
 
