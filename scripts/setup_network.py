@@ -31,7 +31,7 @@ def create_network(name):
     :return:
     """
     client = docker.from_env()
-    nets = client.networks(filter={"name": name})
+    nets = client.networks.list(filters={"name": name})
     if len(nets) == 0:
         rich.print(f"Creating network '{name}'")
         client.networks.create(name=name)
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     networks = {s.split(":")[0]: s.split(":")[1] for s in infrastructure["docker-networks"]}
 
-    for network_name, network_host in networks:
+    for network_name, network_host in networks.items():
         if hostname == network_host:
             create_network(network_name)
 
@@ -85,4 +85,3 @@ if __name__ == "__main__":
             rich.print(f"Running command => {cmd}")
             os.system(cmd)
 
-    
