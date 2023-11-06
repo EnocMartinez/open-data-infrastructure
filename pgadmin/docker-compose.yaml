@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+#------------------------------------------------#
+# PgAdmin
+#------------------------------------------------#
+  pgadmin:
+    image: dpage/pgadmin4:7.8
+    container_name: pgadmin
+    depends_on:
+      - sta_db
+    env_file:
+      - ../../secrets/pgadmin.env
+    ports:
+      - 8085:80
+
