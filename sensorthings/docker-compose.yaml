@@ -27,25 +27,6 @@ services:
       - 8080:8080
 
 #------------------------------------------------#
-# SensorThings TimeSeries
-#------------------------------------------------#
-  sta-timeseries:
-    image: enocmartinez/sensorthings-timeseries:v0.2.1-alpine
-    container_name: sta-timeseries
-    depends_on:
-      - sta_db
-    env_file:
-      - ../../secrets/sensorthings.env
-    ports:
-      - 8081:3000
-    healthcheck:
-      test: curl --fail http://localhost:3000/Sensors || exit 1
-      interval: 60s
-      retries: 1
-      timeout: 2s
-    restart: unless-stopped
-
-#------------------------------------------------#
 # SensorThings Database from TimscaleDB HA image
 #------------------------------------------------#
   sta_db:
@@ -91,18 +72,4 @@ services:
     ports:
       - 80:80
 
-
-#-----------------------------------------------#
-#  Master Metadata database
-#-----------------------------------------------#
-  mongodb:
-    # https://hub.docker.com/r/mongodb/mongodb-community-server/tags
-    image: mongodb/mongodb-community-server:7.0.1-ubuntu2204
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    env_file:
-      - ../../secrets/mongodb.env
-    volumes:
-      - ../../volumes/mongodb:/data/db
 
