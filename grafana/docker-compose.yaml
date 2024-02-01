@@ -2,11 +2,13 @@ version: '3'
 
 services:
   grafana8:
-    image: grafana/grafana:8.4.4
+    image: grafana/grafana:10.3.1-ubuntu
     container_name: grafana
     user: 1001:1001  # force user with UID=1001 (enoc)
     env_file:
-      - ../../secrets/grafana.env
+      - /etc/odi/secrets/grafana.env
+      - /etc/odi/odi.env
+
     environment:
       - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app,grafana-worldmap-panel,fatcloud-windrose-panel,snuids-trafficlights-panel,innius-video-panel,agenty-flowcharting-panel
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
@@ -15,6 +17,6 @@ services:
       - GF_DATE_FORMATS_DEFAULT_TIMEZONE=utc
       - GF_SECURITY_ALLOW_EMBEDDING=true
     ports:
-      - 8084:3000
+      - ${ODI_GRAFANA_PORT}:3000
     volumes:
-      - ../../volumes/grafana/grafana_data:/var/lib/grafana
+      -  /etc/odi/volumes/grafana/grafana_data:/var/lib/grafana

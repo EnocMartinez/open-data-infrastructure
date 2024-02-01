@@ -1,25 +1,25 @@
-version: '3.9'
-
-services:
-  #------------------------------------------------#
-  # SensorThings TimeSeries
-  #------------------------------------------------#
-  sta-timeseries:
-    image: enocmartinez/sensorthings-timeseries:v0.2.1-alpine
-    container_name: sta-timeseries
-    env_file:
-      - ../../secrets/sensorthings.env
-    ports:
-      - 8081:3000
-    networks:
-      - sensorthings-net
-    healthcheck:
-      test: curl --fail http://localhost:3000/Sensors || exit 1
-      interval: 60s
-      retries: 1
-      timeout: 2s
-    restart: unless-stopped
-
-networks:
-  sensorthings-net:
-    external: true
+#version: '3.9'
+#
+#services:
+#  #------------------------------------------------#
+#  # SensorThings TimeSeries
+#  #------------------------------------------------#
+#  sta-timeseries:
+#    image: enocmartinez/sensorthings-timeseries:v0.2.1-ubuntu
+#    container_name: sta-timeseries
+#    env_file:
+#      - /etc/odi/secrets/sensorthings.env
+#    ports:
+#      - ${ODI_SENSORTHINGS_TS_PORT}:3000
+#    networks:
+#      - sensorthings-net
+#    healthcheck:
+#      test: curl --fail http://localhost:3000/Sensors || exit 1
+#      interval: 60s
+#      retries: 1
+#      timeout: 2s
+#    restart: unless-stopped
+#
+#networks:
+#  sensorthings-net:
+#    external: true
