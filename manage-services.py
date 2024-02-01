@@ -12,6 +12,12 @@ import yaml
 import rich
 import os
 from argparse import ArgumentParser
+try:
+    from .utils import process_infrastructure_file, print_infrastructure_conf, run_subprocess
+except ImportError:
+    from scripts.utils import process_infrastructure_file, print_infrastructure_conf, run_subprocess
+
+
 
 def start_service(service):
     if not os.path.isdir(service):
@@ -25,7 +31,8 @@ def start_service(service):
 
 if __name__ == "__main__":
     argparser = ArgumentParser()
-    argparser.add_argument("-i", "--infrastructure", help="Path no infrastructure.yaml", type=str, default="../secrets/infrastructure.yaml")
+    argparser.add_argument("-i", "--infrastructure", help="Path no infrastructure.yaml", type=str, default="/etc/odi/infrastructure.yaml")
+    argparser.add_argument("--force", action="store_true", help="Force start ALL services, regardless of the machine they should run")
     argparser.add_argument("action", help="Docker action (up / down / start /stop)", type=str)
 
     __valid_actions = ["up", "down", "start", "stop"]
@@ -48,22 +55,23 @@ if __name__ == "__main__":
         exit(1)
 
     with open(args.infrastructure) as f:
-        infrastructure = yaml.safe_load(f)["infrastructure"]
+        conf = yaml.safe_load(f)["infrastructure"]
 
     hostname = os.uname().nodename
 
-    services = [s.split(":") for s in infrastructure["services"]]
     # Check that all
 
     wdir = os.getcwd()
-    for service, host in services:
-        if host == hostname:
+    for line in conf["services"]:
+        service, address = line.split("=")
+        host, _ = address.split(":")
+        if host == hostname or args.force:
             try:
                 os.chdir(service)
             except FileNotFoundError:
                 rich.print(f"[red]ERROR! folder {service} does not exist! skipping action")
             cmd = f"docker compose {action}"
-            rich.print(f"\n==> Service '{service}' running '{cmd}'...")
+            rich.print(f"\n==> ODI service '{service}' running '{cmd}'...")
             ret = os.system(cmd)
             if ret == 0:
                 rich.print(f"{service}...[green]ok!")

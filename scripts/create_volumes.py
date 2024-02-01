@@ -32,9 +32,8 @@ for directory in directories:
             rich.print(f"[grey]Container '{directory}:{name}' does not have container")
             continue
 
-        rich.print(f"[purple]processing containers for '{directory}:{name}'")
+        rich.print(f"\n[purple]processing containers for '{directory}:{name}'")
         for volume in service["volumes"]:
-            rich.print(volume)
             try:
                 source, destination = volume.split(":") # split src:dest
             except ValueError:
@@ -42,11 +41,13 @@ for directory in directories:
 
             if not source.startswith("../../volumes"):
                 rich.print(f"volume {source} not following ODI conventions, skipping")
-            else:
+            elif "." not in source.split("/")[-1]:
                 os.chdir(directory)
-                rich.print(f"[green]    ====> creating {source}")
+                rich.print(f"[green]    creating {source}")
                 os.system(f"mkdir -p {source}")
                 os.system(f"chmod 777 {source}")
                 os.chdir("..")
+            else:
+                rich.print(f"[grey]ignoring {source}, assuming its a file")
 
 
