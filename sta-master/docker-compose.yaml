@@ -1,0 +1,49 @@
+services:
+#------------------------------------------------#
+# FROST-Server
+#------------------------------------------------#
+  sta:
+    image: fraunhoferiosb/frost-server:latest
+    container_name: sta_master
+    depends_on:
+      sta_db_master:
+        condition: service_healthy
+    env_file:
+      - /opt/odi/odi.env
+      - sta-master.env
+    ports:
+      - ${ODI_STA_MASTER_PORT}:8080
+    networks:
+      - sensorthings-net
+
+#------------------------------------------------#
+# SensorThings Database from TimescaleDB HA image
+#------------------------------------------------#
+  sta_db_master:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    image: pg_timescale_master
+    container_name: sta_db_master
+    user: '1000'
+    env_file:
+      - sta-master.env
+    environment:
+      - POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256"
+    volumes:
+      - ./volumes/pgdata:/home/postgres/pgdata  # PostgresQL data
+      - /tmp/sta_db_copy/data:/tmp/sta_db_copy/data:ro  # temporal space to perform SQL COPY transactions
+    ports:
+      - 5432:5432  # master DB needs to expose the port to allow replicator connections
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "sensorthings" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 120s
+    networks:
+      - sensorthings-net
+
+networks:
+  sensorthings-net:
+    external: true

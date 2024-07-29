@@ -1,0 +1,20 @@
+
+services:
+#------------------------------------------------#
+# PgAdmin
+#------------------------------------------------#
+  pgadmin:
+    image: dpage/pgadmin4:7.8
+    container_name: pgadmin
+    env_file:
+      - ./pgadmin.env
+    ports:
+      - ${ODI_PGADMIN_PORT}:80
+    networks:
+      - sensorthings-net
+
+
+networks:
+  sensorthings-net:
+    external: true
+

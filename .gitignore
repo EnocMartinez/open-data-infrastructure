@@ -1,0 +1,11 @@
+
+# Environment files may contain sensitive information
+secrets.env
+
+# Infrastructure file contains sensitive information
+infrastructure.yaml
+
+# Any docker volume
+**/volumes/**
+**/__pycache__/**
+.idea

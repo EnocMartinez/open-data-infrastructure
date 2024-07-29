@@ -1,0 +1,18 @@
+services:
+#------------------------------------------------#
+# SensorThings API for Time Series
+#------------------------------------------------#
+  sta_ts_slave:
+    image: enocmartinez/sta-timeseries:0.0.3
+    container_name: sta_ts_slave
+    env_file:
+      - ../sta-slave/sta-slave.env  # import sta-slave env file
+      - sta-ts-slave.env  # add minor detail in custom env file
+    networks:
+      - sensorthings-net
+    ports:
+      - ${ODI_STA_TS_SLAVE_PORT}:5000
+
+networks:
+  sensorthings-net:
+    external: true
