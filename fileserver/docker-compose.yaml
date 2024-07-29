@@ -1,0 +1,12 @@
+# This file hosts a simple file server implemented with an fileserver docker
+services:
+  fileserver:
+    image: nginx:1.25.3-alpine-slim
+    container_name: fileserver
+    env_file:
+      - /opt/odi/odi.env
+    ports:
+      - ${ODI_FILESERVER_PORT}:80
+    volumes:
+      - ./volumes/files:/data/files:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf

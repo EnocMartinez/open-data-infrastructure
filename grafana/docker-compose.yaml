@@ -1,0 +1,19 @@
+services:
+  grafana11:
+    image: grafana/grafana:11.0.1-ubuntu
+    container_name: grafana
+    user: "472"
+    env_file:
+      - /opt/odi/odi.env
+      - ./grafana.env
+    environment:
+      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app,grafana-worldmap-panel,fatcloud-windrose-panel,snuids-trafficlights-panel,innius-video-panel,agenty-flowcharting-panel,yesoreyeram-infinity-datasource
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SMTP_SKIP_VERIFY=false
+      - GF_SMTP_FROM_NAME=Grafana
+      - GF_DATE_FORMATS_DEFAULT_TIMEZONE=utc
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+    ports:
+      - ${ODI_GRAFANA_PORT}:3000
+    volumes:
+      -  ./volumes/grafana:/var/lib/grafana

@@ -1,0 +1,17 @@
+
+services:
+  erddap:
+    container_name: erddap
+    image: axiom/docker-erddap:2.18
+    restart: unless-stopped
+    hostname: dummy-erddap
+    environment:
+      - ERDDAP_baseUrl=https://${ODI_ERDDAP_DNS}
+      - ERDDAP_baseHttpsUrl=https://${ODI_ERDDAP_DNS}
+    ports:
+      - ${ODI_ERDDAP_PORT}:8080
+    volumes:
+      - ./volumes/erddapData:/erddapData   # bind mount for ERDDAP internal data
+      - ./volumes/datasets:/datasets:ro    # bind mount for user data files
+      - ./conf/custom_logo.png:/usr/local/tomcat/webapps/erddap/images/custom_logo.png:ro
+      - ./conf/datasets.xml:/usr/local/tomcat/content/erddap/datasets.xml:ro

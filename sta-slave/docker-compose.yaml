@@ -1,0 +1,44 @@
+services:
+#------------------------------------------------#
+# FROST-Server
+#------------------------------------------------#
+  sta:
+    image: fraunhoferiosb/frost-server:latest
+    container_name: sta_slave
+    depends_on:
+      sta_db_slave:
+        condition: service_healthy
+    env_file:
+      - /opt/odi/odi.env
+      - sta-slave.env
+    networks:
+      - sensorthings-net
+    ports:
+      - ${ODI_STA_SLAVE_PORT}:8080
+
+#------------------------------------------------#
+# SensorThings Database from TimescaleDB HA image
+#------------------------------------------------#
+  sta_db_slave:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    image: pg_timescale_slave
+    user: "1000"
+    container_name: sta_db_slave
+    env_file:
+      - sta-slave.env
+    volumes:
+      - ./volumes/pg_data:/home/postgres/replica # PostgresQL replica data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "sensorthings" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 120s
+    networks:
+      - sensorthings-net
+
+networks:
+  sensorthings-net:
+    external: true
