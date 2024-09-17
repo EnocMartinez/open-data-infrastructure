@@ -12,38 +12,49 @@ unset PGPASSWORD
 postgresql_conf="/home/postgres/pgdata/data/postgresql.conf"
 pg_hba_conf="/home/postgres/pgdata/data/pg_hba.conf"
 replica_path="/home/postgres/replica"
+configured_flag="/home/postgres/replica/SUCCESSFULLY_CONFIGURED"
 
-# Create the pgpass file, syntax: "hostname:port:database:username:password"
-echo "${db_master_host}:${db_master_port}:replication:${sta_db_replicator_user}:${sta_db_replicator_password}" > ~/.pgpass
-chmod 600 ~/.pgpass
 
-#   -d, --dbname=CONNSTR   connection string
-#  -h, --host=HOSTNAME    database server host or socket directory
-#  -p, --port=PORT        database server port number
-#  -s, --status-interval=INTERVAL
-#                         time between status packets sent to server (in seconds)
-#  -U, --username=NAME    connect as specified database user
-#  -w, --no-password      never prompt for password
-#  -W, --password         force password prompt (should happen automatically)
+if [ -f $configured_flag ]; then
+  echo "Skipping basebackup"
+else
 
-echo "stopping PostgresQL..."
-service postgresql stop
 
-echo "Fix replica folder permissions"
-chown 1000:1000 ${replica_path}
-chmod 700 ${replica_path}
+  # Create the pgpass file, syntax: "hostname:port:database:username:password"
+  echo "${db_master_host}:${db_master_port}:replication:${sta_db_replicator_user}:${sta_db_replicator_password}" > ~/.pgpass
+  chmod 600 ~/.pgpass
 
-echo "Running pg_basebackup, this can take a while..."
-pg_basebackup -D ${replica_path} -S replication_slot_slave1 -X stream -P -U ${sta_db_replicator_user} -Fp -R  \
-    -p ${db_master_port} -h ${db_master_host}
+  #   -d, --dbname=CONNSTR   connection string
+  #  -h, --host=HOSTNAME    database server host or socket directory
+  #  -p, --port=PORT        database server port number
+  #  -s, --status-interval=INTERVAL
+  #                         time between status packets sent to server (in seconds)
+  #  -U, --username=NAME    connect as specified database user
+  #  -w, --no-password      never prompt for password
+  #  -W, --password         force password prompt (should happen automatically)
 
-cp $postgresql_conf $replica_path
-cp $postgresql_conf $replica_path
-echo "Cat PostgresQL conf"
-cat $postgresql_conf
 
-echo "data_directory =  '""${replica_path}""'" >> $postgresql_conf
+  echo "stopping PostgresQL..."
+  service postgresql stop
 
-service postgresql start
+  echo "Fix replica folder permissions"
+  chown 1000:1000 ${replica_path}
+  chmod 700 ${replica_path}
 
-psql -c "SELECT * FROM pg_replication_slots;"
+  echo "Running pg_basebackup, this can take a while..."
+  pg_basebackup -D ${replica_path} -S replication_slot_slave1 -X stream -P -U ${sta_db_replicator_user} -Fp -R  \
+      -p ${db_master_port} -h ${db_master_host}
+
+  cp $postgresql_conf $replica_path
+  cp $postgresql_conf $replica_path
+  echo "Cat PostgresQL conf"
+  cat $postgresql_conf
+
+  echo "data_directory =  '""${replica_path}""'" >> $postgresql_conf
+
+  service postgresql start
+
+  psql -c "SELECT * FROM pg_replication_slots;"
+
+  touch $configured_flag
+fi
