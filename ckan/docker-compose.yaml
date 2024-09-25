@@ -1,20 +1,14 @@
 
 services:
   ckan:
-    container_name: ckan
-    image: ckan_build
+    container_name: ckan-test
     build:
       context: ckan/
       dockerfile: Dockerfile
       args:
         - TZ=UTC
-    networks:
-      - ckannet
-      - ckan-db-net
-      - solrnet
-      - redisnet
     ports:
-      - "${ODI_CKAN_PORT}:5000"
+      - "5001:5000"
     env_file:
       - ./ckan.env
     depends_on:
@@ -24,67 +18,40 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./volumes/storage:/var/lib/ckan
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:5000"]
 
   datapusher:
     container_name: ckan_datapusher
-    networks:
-      - ckannet
-      - ckan-db-net
     image: ckan/ckan-base-datapusher:0.0.20
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8800"]
 
   ckan_db:
-    container_name: ckan_db
+    container_name: ckan_db_test
     build:
       context: postgresql/
-    image: ckan_db
-    networks:
-      - ckan-db-net
     env_file:
       - ./ckan.env
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
-    volumes:
-      - ./volumes/pg_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
 
   solr:
-    container_name: ckan_solr
-    user: "8983"
-    networks:
-      - solrnet
+    container_name: ckan_solr_test
     image: ckan/ckan-solr:2.10-solr9
-    volumes:
-      - ./volumes/solr_data:/var/solr
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8983/solr/"]
 
   redis:
-    container_name: ckan_redis
+    container_name: ckan_redis_test
     image: redis:6
-    networks:
-      - redisnet
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "-e", "QUIT"]
-
-networks:
-  webnet:
-  ckannet:
-  solrnet:
-    internal: true
-  ckan-db-net:
-    external: true
-  redisnet:
-    internal: true
