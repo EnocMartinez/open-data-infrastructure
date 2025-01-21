@@ -1,16 +1,19 @@
 
 services:
   ckan:
-    container_name: ckan-test
+    container_name: ckan
+    image: ckan-build
     build:
       context: ckan/
       dockerfile: Dockerfile
       args:
         - TZ=UTC
     ports:
-      - "5001:5000"
+      - "${ODI_CKAN_PORT}:5000"
     env_file:
       - ./ckan.env
+    volumes:
+     - ./volumes/storage:/var/lib/ckan
     depends_on:
       ckan_db:
         condition: service_healthy
@@ -30,11 +33,14 @@ services:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8800"]
 
   ckan_db:
-    container_name: ckan_db_test
+    container_name: ckan_db
+    image: ckan-db-build
     build:
       context: postgresql/
     env_file:
       - ./ckan.env
+    volumes:
+      - ./volumes/pg_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
@@ -43,14 +49,19 @@ services:
       test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
 
   solr:
-    container_name: ckan_solr_test
+    container_name: ckan_solr
+    user: "8983"
     image: ckan/ckan-solr:2.10-solr9
     restart: unless-stopped
+    volumes:
+      - ./volumes/solr_data/data:/var/solr/data
+      - ./volumes/solr_data/logs:/var/solr/logs
+
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8983/solr/"]
 
   redis:
-    container_name: ckan_redis_test
+    container_name: ckan_redis
     image: redis:6
     restart: unless-stopped
     healthcheck:

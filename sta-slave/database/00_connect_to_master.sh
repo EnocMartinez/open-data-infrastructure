@@ -14,25 +14,13 @@ pg_hba_conf="/home/postgres/pgdata/data/pg_hba.conf"
 replica_path="/home/postgres/replica"
 configured_flag="/home/postgres/replica/SUCCESSFULLY_CONFIGURED"
 
+ # Create the pgpass file, syntax: "hostname:port:database:username:password"
+echo "${db_master_host}:${db_master_port}:replication:${sta_db_replicator_user}:${sta_db_replicator_password}" > ~/.pgpass
+chmod 600 ~/.pgpass
 
 if [ -f $configured_flag ]; then
   echo "Skipping basebackup"
 else
-
-
-  # Create the pgpass file, syntax: "hostname:port:database:username:password"
-  echo "${db_master_host}:${db_master_port}:replication:${sta_db_replicator_user}:${sta_db_replicator_password}" > ~/.pgpass
-  chmod 600 ~/.pgpass
-
-  #   -d, --dbname=CONNSTR   connection string
-  #  -h, --host=HOSTNAME    database server host or socket directory
-  #  -p, --port=PORT        database server port number
-  #  -s, --status-interval=INTERVAL
-  #                         time between status packets sent to server (in seconds)
-  #  -U, --username=NAME    connect as specified database user
-  #  -w, --no-password      never prompt for password
-  #  -W, --password         force password prompt (should happen automatically)
-
 
   echo "stopping PostgresQL..."
   service postgresql stop
