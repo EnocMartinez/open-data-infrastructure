@@ -119,6 +119,7 @@ if __name__ == "__main__":
             run_subprocess_pipe("docker compose logs", debug=verbose)
 
         elif args.action == "remove":
+            info(f"running docker compose down for '{service}'")
             run_subprocess_pipe("docker compose down", debug=verbose)
             infrastructure.remove_service(service)
         else:
